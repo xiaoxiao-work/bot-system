@@ -1,0 +1,18 @@
+# Bot Manager 配置文件
+
+# OpenIM 配置
+openim:
+  api: "http://192.168.31.37:10002"
+  secret: "openIM123"
+
+# 服务器配置
+server:
+  port: ":10006"                         # 服务监听端口
+  url: "http://192.168.31.37:10006"      # 外部访问地址（用于 Bot 回调）
+
+# MongoDB 配置
+mongodb:
+  uri: "mongodb://192.168.31.37:27017"
+  database: "openim_v3"
+  username: "root"
+  password: "openIM123"

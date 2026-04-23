@@ -108,8 +108,8 @@ func forwardToBot(bot *model.Bot, msg *types.WebhookMessage) {
 	payload := map[string]interface{}{
 		"message":          msg,
 		"botID":            bot.BotID,
-		"botSecret":        bot.Secret,                                        // Bot 密钥，用于回调验证
-		"replyCallbackURL": config.Global.ServerURL + "/api/bot/send_message", // Bot 回复的回调地址
+		"botSecret":        bot.Secret,                                    // Bot 密钥，用于回调验证
+		"replyCallbackURL": config.Global.Server.URL + "/api/bot/send_message", // Bot 回复的回调地址
 	}
 
 	jsonData, _ := json.Marshal(payload)

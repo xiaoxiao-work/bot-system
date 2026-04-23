@@ -9,6 +9,8 @@ services:
       - "10006:10006"
     environment:
       - TZ=Asia/Shanghai
+    volumes:
+      - ./config/config.yml:/app/config/config.yml:ro  # 挂载配置文件（只读）
     depends_on:
       - mongo
       - redis

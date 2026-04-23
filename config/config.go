@@ -1,44 +1,65 @@
 package config
 
-import "open-im-server/bot-system/common/openim"
+import (
+	"fmt"
+	"os"
+
+	"github.com/goccy/go-yaml"
+
+	"open-im-server/bot-system/common/openim"
+)
 
 // Config 全局配置
 type Config struct {
-	OpenIMAPI    string
-	OpenIMSecret string
-	ServerPort   string
-	ServerURL    string // Bot Manager 的外部访问地址
-	MongoDB      MongoDBConfig
+	OpenIM  OpenIMConfig  `yaml:"openim"`
+	Server  ServerConfig  `yaml:"server"`
+	MongoDB MongoDBConfig `yaml:"mongodb"`
+}
+
+// OpenIMConfig OpenIM 配置
+type OpenIMConfig struct {
+	API    string `yaml:"api"`
+	Secret string `yaml:"secret"`
+}
+
+// ServerConfig 服务器配置
+type ServerConfig struct {
+	Port string `yaml:"port"`
+	URL  string `yaml:"url"` // Bot Manager 的外部访问地址
 }
 
 // MongoDBConfig MongoDB 配置
 type MongoDBConfig struct {
-	URI      string
-	Database string
-	Username string
-	Password string
+	URI      string `yaml:"uri"`
+	Database string `yaml:"database"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 // Global 全局配置实例
-var Global = &Config{
-	OpenIMAPI:    "http://192.168.31.37:10002",
-	OpenIMSecret: "openIM123",
-	ServerPort:   ":10006",
-	ServerURL:    "http://192.168.31.129:10006", // Bot Manager 的外部访问地址
-	MongoDB: MongoDBConfig{
-		URI:      "mongodb://192.168.31.37:27017",
-		Database: "openim_v3",
-		Username: "root",
-		Password: "openIM123",
-	},
-}
+var Global *Config
 
 // OpenIMClient 全局 OpenIM 客户端
 var OpenIMClient *openim.Client
 
+// LoadConfig 加载配置文件
+func LoadConfig(configPath string) error {
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("读取配置文件失败: %w", err)
+	}
+
+	Global = &Config{}
+	if err := yaml.Unmarshal(data, Global); err != nil {
+		return fmt.Errorf("解析配置文件失败: %w", err)
+	}
+
+	return nil
+}
+
 // InitOpenIMClient 初始化 OpenIM 客户端
 func InitOpenIMClient() error {
-	OpenIMClient = openim.NewClient(Global.OpenIMAPI)
-	OpenIMClient.SetSecret(Global.OpenIMSecret)
+	OpenIMClient = openim.NewClient(Global.OpenIM.API)
+	OpenIMClient.SetSecret(Global.OpenIM.Secret)
 	return OpenIMClient.InitAdminToken()
 }

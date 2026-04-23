@@ -17,6 +17,12 @@ import (
 )
 
 func main() {
+	// 加载配置文件
+	if err := config.LoadConfig("config/config.yml"); err != nil {
+		log.Fatalf("加载配置文件失败: %v", err)
+	}
+	log.Println("配置文件加载成功")
+
 	// 初始化 MongoDB
 	log.Println("正在连接 MongoDB...")
 	if err := repository.InitMongoDB(); err != nil {
@@ -69,8 +75,8 @@ func main() {
 
 	// 启动服务
 	go func() {
-		log.Printf("Bot Manager 启动在 %s", config.Global.ServerPort)
-		if err := r.Run(config.Global.ServerPort); err != nil {
+		log.Printf("Bot Manager 启动在 %s", config.Global.Server.Port)
+		if err := r.Run(config.Global.Server.Port); err != nil {
 			log.Fatalf("服务启动失败: %v", err)
 		}
 	}()
