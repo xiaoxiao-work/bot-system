@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 
@@ -27,6 +28,7 @@ func SubscribeBot(c *gin.Context) {
 	// 确保 Bot 用户在 OpenIM 中存在
 	err := service.EnsureBotUserExists(ctx, req.BotID)
 	if err != nil {
+		log.Printf("确保 Bot 用户存在失败: %v", err)
 		response.ErrorFromErr(c, response.ErrRegisterFailed, "确保 Bot 用户存在失败", err)
 		return
 	}
@@ -45,6 +47,7 @@ func SubscribeBot(c *gin.Context) {
 	// 邀请 Bot 加入群组
 	err = service.InviteBotToGroup(groupID, req.BotID, req.OperatorID)
 	if err != nil {
+		log.Printf("邀请 Bot 加入群组失败: %v", err)
 		response.ErrorFromErr(c, response.ErrInviteFailed, "邀请 Bot 加入群组失败", err)
 		return
 	}
@@ -52,6 +55,7 @@ func SubscribeBot(c *gin.Context) {
 	// 记录订阅关系
 	err = service.SubscribeBot(ctx, groupID, req.BotID, req.OperatorID)
 	if err != nil {
+		log.Printf("保存订阅关系失败: %v", err)
 		response.ErrorFromErr(c, response.ErrInternalServer, "保存订阅关系失败", err)
 		return
 	}

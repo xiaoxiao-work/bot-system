@@ -155,13 +155,19 @@ func EnsureBotUserExists(ctx context.Context, botID string) error {
 	err = config.OpenIMClient.RegisterUser(botID, bot.Name, bot.FaceURL)
 	if err != nil {
 		errStr := strings.ToLower(err.Error())
-		if strings.Contains(errStr, "already") || strings.Contains(errStr, "exist") || strings.Contains(errStr, "registered") {
-			log.Printf("Bot 用户 %s 已存在于 OpenIM", botID)
+
+		// 检查是否是"已存在"错误（正常情况）
+		if strings.Contains(errStr, "already") ||
+			strings.Contains(errStr, "exist") ||
+			strings.Contains(errStr, "registered") ||
+			strings.Contains(errStr, "1102") { // OpenIM 的已注册错误码
 			return nil
 		}
+
+		log.Printf("注册 Bot 用户失败: botID=%s, error=%v", botID, err)
 		return fmt.Errorf("注册 Bot 用户失败: %w", err)
 	}
 
-	log.Printf("Bot 用户 %s 注册到 OpenIM 成功", botID)
+	log.Printf("Bot 用户注册成功: %s (%s)", bot.Name, botID)
 	return nil
 }

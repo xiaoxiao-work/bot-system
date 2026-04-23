@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  bot-system:
+    image: 192.168.31.37:5000/bot-system:latest
+    container_name: bot-system
+    restart: unless-stopped
+    ports:
+      - "10006:10006"
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+      - kafka
+      - minio
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - openim
+

@@ -91,7 +91,6 @@ func InviteBotToGroup(groupID, botID, operatorID string) error {
 		return fmt.Errorf("邀请Bot加入群组失败: %w", err)
 	}
 
-	log.Printf("Bot %s 已加入群组 %s (操作者: %s)", botID, groupID, operatorID)
 	return nil
 }
 
@@ -109,6 +108,5 @@ func KickBotFromGroup(groupID, botID, operatorID string) error {
 		return fmt.Errorf("踢出Bot失败: %w", err)
 	}
 
-	log.Printf("Bot %s 已从群组 %s 移除 (操作者: %s)", botID, groupID, operatorID)
 	return nil
 }
