@@ -48,13 +48,6 @@ func main() {
 	service.InitGroupService()
 	log.Println("服务初始化完成")
 
-	// 同步 BotID 计数器（防止删除后重复）
-	if err := service.SyncBotIDCounter(ctx); err != nil {
-		log.Printf("同步 BotID 计数器失败: %v", err)
-	} else {
-		log.Println("BotID 计数器同步完成")
-	}
-
 	// 加载 Bot 缓存
 	if err := service.LoadBotCache(ctx); err != nil {
 		log.Printf("加载 Bot 缓存失败: %v", err)

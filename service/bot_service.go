@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	botRepo     repository.BotRepository
-	counterRepo repository.CounterRepository
+	botRepo      repository.BotRepository
+	counterRepo  repository.CounterRepository
 	botInfoCache *BotInfoCache // Bot 信息缓存（用于高频场景）
 )
 
@@ -99,11 +99,6 @@ func InitBotService() {
 // LoadBotCache 加载 Bot 缓存
 func LoadBotCache(ctx context.Context) error {
 	return botInfoCache.LoadAll(ctx, botRepo)
-}
-
-// SyncBotIDCounter 同步 BotID 计数器
-func SyncBotIDCounter(ctx context.Context) error {
-	return counterRepo.SyncBotIDCounter(ctx)
 }
 
 // GetAllBots 获取所有 Bot（直接查数据库，保证数据准确）
