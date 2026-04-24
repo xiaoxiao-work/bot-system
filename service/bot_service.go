@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	botRepo      repository.BotRepository
+	botRepo     repository.BotRepository
+	counterRepo repository.CounterRepository
 	botInfoCache *BotInfoCache // Bot 信息缓存（用于高频场景）
 )
 
@@ -91,6 +92,7 @@ func (c *BotInfoCache) LoadAll(ctx context.Context, repo repository.BotRepositor
 // InitBotService 初始化 Bot 服务
 func InitBotService() {
 	botRepo = repository.NewBotRepository()
+	counterRepo = repository.NewCounterRepository()
 	botInfoCache = NewBotInfoCache()
 }
 
@@ -99,9 +101,19 @@ func LoadBotCache(ctx context.Context) error {
 	return botInfoCache.LoadAll(ctx, botRepo)
 }
 
+// SyncBotIDCounter 同步 BotID 计数器
+func SyncBotIDCounter(ctx context.Context) error {
+	return counterRepo.SyncBotIDCounter(ctx)
+}
+
 // GetAllBots 获取所有 Bot（直接查数据库，保证数据准确）
 func GetAllBots(ctx context.Context) ([]*model.Bot, error) {
 	return botRepo.FindAll(ctx)
+}
+
+// GetBotsByGroupID 获取系统级 Bot 和指定群组的 Bot
+func GetBotsByGroupID(ctx context.Context, groupID string) ([]*model.Bot, error) {
+	return botRepo.FindByGroupID(ctx, groupID)
 }
 
 // GetBot 获取指定 Bot（直接查数据库，保证数据准确）
@@ -169,5 +181,85 @@ func EnsureBotUserExists(ctx context.Context, botID string) error {
 	}
 
 	log.Printf("Bot 用户注册成功: %s (%s)", bot.Name, botID)
+	return nil
+}
+
+// CreateBot 创建 Bot
+func CreateBot(ctx context.Context, bot *model.Bot) error {
+	// 自动生成 BotID
+	botID, err := counterRepo.GetNextBotID(ctx)
+	if err != nil {
+		return fmt.Errorf("生成 BotID 失败: %w", err)
+	}
+	bot.BotID = botID
+
+	// 创建 Bot
+	if err := botRepo.Create(ctx, bot); err != nil {
+		return fmt.Errorf("创建 Bot 失败: %w", err)
+	}
+
+	// 注册到 OpenIM
+	if err := config.OpenIMClient.RegisterUser(bot.BotID, bot.Name, bot.FaceURL); err != nil {
+		errStr := strings.ToLower(err.Error())
+		// 忽略"已存在"错误
+		if !strings.Contains(errStr, "already") &&
+			!strings.Contains(errStr, "exist") &&
+			!strings.Contains(errStr, "registered") &&
+			!strings.Contains(errStr, "1102") {
+			log.Printf("注册 Bot 用户到 OpenIM 失败: %v", err)
+			// 不回滚，允许后续重试
+		}
+	}
+
+	// 更新缓存
+	botInfoCache.Set(bot.BotID, &BotInfo{
+		BotID:   bot.BotID,
+		Name:    bot.Name,
+		FaceURL: bot.FaceURL,
+		Secret:  bot.Secret,
+	})
+
+	log.Printf("Bot 创建成功: %s (%s)", bot.Name, bot.BotID)
+	return nil
+}
+
+// DeleteBot 删除 Bot（带权限检查）
+func DeleteBot(ctx context.Context, botID, creatorID, groupID string) error {
+	// 查询 Bot
+	bot, err := botRepo.FindByID(ctx, botID)
+	if err != nil {
+		return fmt.Errorf("查询 Bot 失败: %w", err)
+	}
+	if bot == nil {
+		return fmt.Errorf("Bot %s 不存在", botID)
+	}
+
+	// 权限检查：验证创建者和群组
+	if bot.CreatorID != creatorID {
+		return fmt.Errorf("无权删除此 Bot：创建者不匹配")
+	}
+	if bot.GroupID != groupID {
+		return fmt.Errorf("无权删除此 Bot：群组不匹配")
+	}
+
+	// 检查是否有群组订阅
+	groupBotRepo := repository.NewGroupBotRepository()
+	subscriptions, err := groupBotRepo.FindByBotID(ctx, botID)
+	if err != nil {
+		return fmt.Errorf("检查订阅关系失败: %w", err)
+	}
+	if len(subscriptions) > 0 {
+		return fmt.Errorf("Bot 正在被 %d 个群组使用，无法删除", len(subscriptions))
+	}
+
+	// 删除 Bot
+	if err := botRepo.Delete(ctx, botID); err != nil {
+		return fmt.Errorf("删除 Bot 失败: %w", err)
+	}
+
+	// 删除缓存
+	botInfoCache.Delete(botID)
+
+	log.Printf("Bot 删除成功: %s (%s)", bot.Name, botID)
 	return nil
 }

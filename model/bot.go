@@ -15,9 +15,10 @@ type Bot struct {
 	Description string       `json:"description" bson:"description"`
 	FaceURL     string       `json:"faceURL" bson:"faceURL"`
 	WebhookURL  string       `json:"webhookURL" bson:"webhookURL"`
-	Secret      string       `json:"secret" bson:"secret"`     // Bot 密钥，用于验证回调
-	Commands    []BotCommand `json:"commands" bson:"commands"` // Bot 支持的命令列表
-	IsPublic    bool         `json:"isPublic" bson:"isPublic"`
+	Secret      string       `json:"secret" bson:"secret"`       // Bot 密钥，用于验证回调
+	Commands    []BotCommand `json:"commands" bson:"commands"`   // Bot 支持的命令列表
+	CreatorID   string       `json:"creatorID" bson:"creatorID"` // 创建者 ID，空表示系统级 Bot
+	GroupID     string       `json:"groupID" bson:"groupID"`     // 所属群组 ID，空表示系统级 Bot
 	CreatedAt   time.Time    `json:"createdAt" bson:"createdAt"`
 	UpdatedAt   time.Time    `json:"updatedAt" bson:"updatedAt"`
 }

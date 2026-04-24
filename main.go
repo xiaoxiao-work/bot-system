@@ -48,6 +48,13 @@ func main() {
 	service.InitGroupService()
 	log.Println("服务初始化完成")
 
+	// 同步 BotID 计数器（防止删除后重复）
+	if err := service.SyncBotIDCounter(ctx); err != nil {
+		log.Printf("同步 BotID 计数器失败: %v", err)
+	} else {
+		log.Println("BotID 计数器同步完成")
+	}
+
 	// 加载 Bot 缓存
 	if err := service.LoadBotCache(ctx); err != nil {
 		log.Printf("加载 Bot 缓存失败: %v", err)
@@ -64,7 +71,12 @@ func main() {
 	// Bot 管理 API
 	api := r.Group("/api")
 	{
+		// Bot CRUD
 		api.GET("/bots", handler.ListBots)
+		api.POST("/bots", handler.CreateBot)
+		api.DELETE("/bots/:botID", handler.DeleteBot)
+
+		// 群组订阅管理
 		api.POST("/group/:groupID/subscribe_bot", handler.SubscribeBot)
 		api.POST("/group/:groupID/unsubscribe_bot", handler.UnsubscribeBot)
 		api.GET("/group/:groupID/bots", handler.GetGroupBots)

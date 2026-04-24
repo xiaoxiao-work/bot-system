@@ -19,8 +19,10 @@ const (
 type BotRepository interface {
 	Create(ctx context.Context, bot *model.Bot) error
 	Update(ctx context.Context, bot *model.Bot) error
+	Delete(ctx context.Context, botID string) error
 	FindByID(ctx context.Context, botID string) (*model.Bot, error)
 	FindAll(ctx context.Context) ([]*model.Bot, error)
+	FindByGroupID(ctx context.Context, groupID string) ([]*model.Bot, error)
 	Exists(ctx context.Context, botID string) (bool, error)
 }
 
@@ -66,6 +68,30 @@ func (r *botRepository) FindByID(ctx context.Context, botID string) (*model.Bot,
 // FindAll 查找所有 Bot
 func (r *botRepository) FindAll(ctx context.Context) ([]*model.Bot, error) {
 	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var bots []*model.Bot
+	if err = cursor.All(ctx, &bots); err != nil {
+		return nil, err
+	}
+	return bots, nil
+}
+
+// FindByGroupID 查找系统级 Bot 和指定群组的 Bot
+func (r *botRepository) FindByGroupID(ctx context.Context, groupID string) ([]*model.Bot, error) {
+	// 查询条件：groupID 不存在、为空或等于指定 groupID
+	filter := bson.M{
+		"$or": []bson.M{
+			{"groupID": bson.M{"$exists": false}}, // 字段不存在（旧数据）
+			{"groupID": ""},                        // 系统级 Bot（新数据）
+			{"groupID": groupID},                   // 该群组的 Bot
+		},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
