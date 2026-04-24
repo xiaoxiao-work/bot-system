@@ -24,9 +24,8 @@ type OpenIMConfig struct {
 
 // ServerConfig 服务器配置
 type ServerConfig struct {
-	Port             string `yaml:"port"`
-	URL              string `yaml:"url"`              // Bot Manager 的外部访问地址
-	DefaultBotAvatar string `yaml:"defaultBotAvatar"` // 默认 Bot 头像
+	Port string `yaml:"port"`
+	URL  string `yaml:"url"` // Bot Manager 的外部访问地址
 }
 
 // MongoDBConfig MongoDB 配置

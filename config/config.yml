@@ -9,7 +9,6 @@ openim:
 server:
   port: ":10006"                         # 服务监听端口
   url: "http://192.168.31.37:10006"      # 外部访问地址（用于 Bot 回调）
-  defaultBotAvatar: "http://192.168.31.37:10006/static/bot-avatar.png"  # 默认 Bot 头像
 
 # MongoDB 配置
 mongodb:
