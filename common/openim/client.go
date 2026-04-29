@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"open-im-server/bot-system/common/types"
@@ -169,7 +170,17 @@ func (c *Client) KickFromGroup(groupID string, userIDs []string, token string) e
 	}
 
 	_, err := c.doRequest("POST", url, payload, token)
-	return err
+	if err != nil {
+		errStr := strings.ToLower(err.Error())
+		// 忽略用户不存在的错误（用户可能已被手动移除）
+		if strings.Contains(errStr, "not found") ||
+			strings.Contains(errStr, "1101") || // UserIDNotFoundError
+			strings.Contains(errStr, "useridnotfounderror") {
+			return nil
+		}
+		return err
+	}
+	return nil
 }
 
 // 发送群消息
