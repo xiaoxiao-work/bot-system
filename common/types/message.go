@@ -18,6 +18,7 @@ type WebhookMessage struct {
 	SendTime        int64       `json:"sendTime"`
 	SenderNickname  string      `json:"senderNickname"`
 	SenderFaceURL   string      `json:"senderFaceURL"`
+	AtUserList      []string    `json:"atUserList"` // @ 的用户列表
 }
 
 // GetContentMap 获取 Content 的 map 形式
@@ -35,23 +36,6 @@ func (m *WebhookMessage) GetContentMap() (map[string]interface{}, error) {
 	default:
 		return nil, nil
 	}
-}
-
-// GetContentString 获取 Content 的字符串形式
-func (m *WebhookMessage) GetContentString() string {
-	switch v := m.Content.(type) {
-	case string:
-		return v
-	case map[string]interface{}:
-		if text, ok := v["text"].(string); ok {
-			return text
-		}
-		// 尝试序列化为 JSON
-		if data, err := json.Marshal(v); err == nil {
-			return string(data)
-		}
-	}
-	return ""
 }
 
 // 发送消息请求

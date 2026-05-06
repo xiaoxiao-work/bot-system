@@ -59,6 +59,13 @@ func HandleWebhookAfterSendGroupMsgCommand(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
+	// 只处理包含 @ 的文本消息（contentType=106）
+	if msg.ContentType != 106 {
+		log.Printf("忽略非文本消息，ContentType: %d", msg.ContentType)
+		response.SuccessResponse(c, nil)
+		return
+	}
+
 	// 获取该群订阅的 Bot
 	subscribedBots, err := service.GetGroupBotIDs(ctx, msg.GroupID)
 	if err != nil {
@@ -108,7 +115,7 @@ func forwardToBot(bot *model.Bot, msg *types.WebhookMessage) {
 	payload := map[string]interface{}{
 		"message":          msg,
 		"botID":            bot.BotID,
-		"botSecret":        bot.Secret,                                    // Bot 密钥，用于回调验证
+		"botSecret":        bot.Secret,                                         // Bot 密钥，用于回调验证
 		"replyCallbackURL": config.Global.Server.URL + "/api/bot/send_message", // Bot 回复的回调地址
 	}
 

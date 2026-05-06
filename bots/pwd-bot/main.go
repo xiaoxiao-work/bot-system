@@ -15,10 +15,10 @@ import (
 
 // WebhookPayload Bot Manager 发送的 Webhook 数据
 type WebhookPayload struct {
-	Message           Message `json:"message"`
-	BotID             string  `json:"botID"`
-	BotSecret         string  `json:"botSecret"`         // Bot 密钥，用于回调验证
-	ReplyCallbackURL  string  `json:"replyCallbackURL"` // 回复消息的回调地址
+	Message          Message `json:"message"`
+	BotID            string  `json:"botID"`
+	BotSecret        string  `json:"botSecret"`        // Bot 密钥，用于回调验证
+	ReplyCallbackURL string  `json:"replyCallbackURL"` // 回复消息的回调地址
 }
 
 // Message 消息结构
@@ -73,7 +73,7 @@ func handleWebhook(c *gin.Context) {
 	log.Printf("消息内容: %s", content)
 
 	// 检查是否是 /pwd 命令
-	if !strings.HasPrefix(content, "/pwd") {
+	if !strings.Contains(content, "/pwd") {
 		log.Printf("忽略非 /pwd 命令")
 		c.JSON(200, gin.H{"status": "ignored"})
 		return
@@ -134,7 +134,7 @@ func sendReply(payload WebhookPayload, text string) error {
 
 	jsonData, _ := json.Marshal(req)
 	log.Printf("发送消息到 Bot Manager: %s", payload.ReplyCallbackURL)
-	
+
 	httpReq, err := http.NewRequest("POST", payload.ReplyCallbackURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("创建请求失败: %w", err)

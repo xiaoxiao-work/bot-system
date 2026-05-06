@@ -32,13 +32,12 @@ func ListBots(c *gin.Context) {
 // CreateBot 创建 Bot
 func CreateBot(c *gin.Context) {
 	var req struct {
-		Name        string             `json:"name" binding:"required"`
-		Description string             `json:"description"`
-		FaceURL     string             `json:"faceURL"`
-		WebhookURL  string             `json:"webhookURL" binding:"required"`
-		Commands    []model.BotCommand `json:"commands"`
-		CreatorID   string             `json:"creatorID" binding:"required"` // 创建者 ID（必填）
-		GroupID     string             `json:"groupID" binding:"required"`   // 所属群组 ID（必填）
+		Name        string `json:"name" binding:"required"`
+		Description string `json:"description"`
+		FaceURL     string `json:"faceURL"`
+		WebhookURL  string `json:"webhookURL" binding:"required"`
+		CreatorID   string `json:"creatorID" binding:"required"` // 创建者 ID（必填）
+		GroupID     string `json:"groupID" binding:"required"`   // 所属群组 ID（必填）
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -58,7 +57,6 @@ func CreateBot(c *gin.Context) {
 		FaceURL:     req.FaceURL,
 		WebhookURL:  req.WebhookURL,
 		Secret:      secret,
-		Commands:    req.Commands,
 		CreatorID:   req.CreatorID,
 		GroupID:     req.GroupID,
 	}

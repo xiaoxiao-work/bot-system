@@ -74,7 +74,7 @@ func handleWebhook(c *gin.Context) {
 	log.Printf("消息内容: %s", content)
 
 	// 检查是否是 /ls 命令
-	if !strings.HasPrefix(content, "/ls") {
+	if !strings.Contains(content, "/ls") {
 		log.Printf("忽略非 /ls 命令")
 		c.JSON(200, gin.H{"status": "ignored"})
 		return
